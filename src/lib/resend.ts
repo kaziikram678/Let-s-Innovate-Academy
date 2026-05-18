@@ -1,0 +1,11 @@
+import { Resend } from "resend"
+
+const resendApiKey = process.env.RESEND_API_KEY
+
+if (!resendApiKey) {
+  console.warn("RESEND_API_KEY is not set. Email notifications will not work.")
+}
+
+export const resend = resendApiKey ? new Resend(resendApiKey) : null
+
+export const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"
