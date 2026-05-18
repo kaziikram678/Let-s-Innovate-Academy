@@ -15,6 +15,19 @@ interface Profile {
   updated_at: string
 }
 
+interface ProfileInsert {
+  phone?: string
+  full_name?: string
+  role?: string
+}
+
+interface ProfileUpdate {
+  phone?: string
+  full_name?: string
+  role?: string
+  avatar_url?: string | null
+}
+
 interface AuthContextType {
   user: User | null
   session: Session | null
@@ -114,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (newUser) {
         await supabaseClient
           .from("profiles")
-          .update({ phone })
+          .update({ phone } as unknown as ProfileUpdate)
           .eq("id", newUser.id)
       }
     }
@@ -142,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { error } = await supabaseClient
       .from("profiles")
-      .update(updates)
+      .update(updates as unknown as ProfileUpdate)
       .eq("id", user.id)
 
     if (!error) {

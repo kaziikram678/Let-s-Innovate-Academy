@@ -3,6 +3,21 @@ import { supabaseServer, isSupabaseConfigured, supabaseClient } from "@/lib/supa
 import { resend, fromEmail } from "@/lib/resend"
 import { siteConfig } from "@/data/site"
 
+interface EnrollmentRow {
+  id: string
+  course_slug: string
+  course_title: string
+  full_name: string
+  phone: string
+  email: string
+  transaction_id: string
+  bkash_number: string
+  message: string | null
+  status: "pending" | "verified" | "rejected"
+  user_id: string | null
+  created_at: string
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -19,7 +34,6 @@ export async function POST(request: NextRequest) {
       userId,
     } = body
 
-    // Validation
     if (!courseSlug || !fullName || !phone || !email || !transactionId || !bkashNumber) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -27,7 +41,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -44,7 +57,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check for duplicate transaction ID
     const { data: existingEnrollment } = await supabaseServer
       .from("enrollments")
       .select("id")
@@ -58,7 +70,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Insert enrollment into Supabase
     const { data: newEnrollment, error: insertError } = await supabaseServer
       .from("enrollments")
       .insert({
@@ -72,7 +83,7 @@ export async function POST(request: NextRequest) {
         message: message || null,
         status: "pending",
         user_id: userId || null,
-      })
+      } as unknown as EnrollmentRow)
       .select()
       .single()
 
@@ -84,7 +95,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Send confirmation email to user
     if (resend) {
       try {
         await resend.emails.send({
@@ -121,11 +131,9 @@ export async function POST(request: NextRequest) {
         console.log("Confirmation email sent to:", email)
       } catch (emailError) {
         console.error("Failed to send confirmation email:", emailError)
-        // Don't fail the enrollment if email fails
       }
     }
 
-    // Send notification email to admin (you)
     if (resend && siteConfig.email) {
       try {
         await resend.emails.send({
@@ -218,7 +226,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      enrollments: enrollments || [],
+      enrollments: enrollments as EnrollmentRow[] || [],
       total: enrollments?.length || 0,
     })
   } catch (error) {
@@ -251,7 +259,7 @@ export async function PATCH(request: NextRequest) {
 
     const { data, error } = await supabaseServer
       .from("enrollments")
-      .update({ status })
+      .update({ status } as unknown as Partial<EnrollmentRow>)
       .eq("id", id)
       .select()
       .single()
@@ -264,25 +272,26 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    // Send status update email to user if verified
+    const enrollmentData = data as EnrollmentRow
+
     if (status === "verified" && resend) {
       try {
         await resend.emails.send({
           from: fromEmail,
-          to: data.email,
-          subject: `Payment Verified - ${data.course_title}`,
+          to: enrollmentData.email,
+          subject: `Payment Verified - ${enrollmentData.course_title}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #10b981;">Payment Verified!</h2>
-              <p>Hi ${data.full_name},</p>
-              <p>Your payment for <strong>${data.course_title}</strong> has been verified successfully.</p>
+              <p>Hi ${enrollmentData.full_name},</p>
+              <p>Your payment for <strong>${enrollmentData.course_title}</strong> has been verified successfully.</p>
               <p>You will receive an email with the live class schedule, meeting links, and instructions before each session.</p>
               <p>If you have any questions, contact us on WhatsApp: <a href="https://wa.me/${siteConfig.whatsapp.replace('+', '')}">${siteConfig.whatsapp}</a></p>
               <p>Best regards,<br/>${siteConfig.name} Team</p>
             </div>
           `,
         })
-        console.log("Verification email sent to:", data.email)
+        console.log("Verification email sent to:", enrollmentData.email)
       } catch (emailError) {
         console.error("Failed to send verification email:", emailError)
       }
