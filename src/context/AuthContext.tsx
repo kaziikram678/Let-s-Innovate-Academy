@@ -3,41 +3,22 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
 import { User, Session } from "@supabase/supabase-js"
 import { supabaseClient } from "@/lib/supabase"
+import type { Database } from "@/lib/database.types"
 
-interface Profile {
-  id: string
-  email: string
-  full_name: string | null
-  phone: string | null
-  role: "user" | "admin"
-  avatar_url: string | null
-  created_at: string
-  updated_at: string
-}
-
-interface ProfileInsert {
-  phone?: string
-  full_name?: string
-  role?: string
-}
-
-interface ProfileUpdate {
-  phone?: string
-  full_name?: string
-  role?: string
-  avatar_url?: string | null
-}
+type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"]
+type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"]
+type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"]
 
 interface AuthContextType {
   user: User | null
   session: Session | null
-  profile: Profile | null
+  profile: ProfileRow | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<{ error: Error | null }>
-  updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>
+  updateProfile: (updates: ProfileUpdate) => Promise<{ error: Error | null }>
   isAdmin: boolean
 }
 
@@ -46,7 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const [profile, setProfile] = useState<ProfileRow | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchProfile = useCallback(async (userId: string) => {
@@ -63,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    setProfile(data as Profile)
+    setProfile(data)
   }, [])
 
   useEffect(() => {
@@ -127,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (newUser) {
         await supabaseClient
           .from("profiles")
-          .update({ phone } as unknown as ProfileUpdate)
+          .update({ phone })
           .eq("id", newUser.id)
       }
     }
@@ -150,12 +131,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error }
   }
 
-  const updateProfile = async (updates: Partial<Profile>) => {
+  const updateProfile = async (updates: ProfileUpdate) => {
     if (!supabaseClient || !user) return { error: new Error("Not authenticated") }
 
     const { error } = await supabaseClient
       .from("profiles")
-      .update(updates as unknown as ProfileUpdate)
+      .update(updates)
       .eq("id", user.id)
 
     if (!error) {

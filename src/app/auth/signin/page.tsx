@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/context/AuthContext"
 
-export default function SignInPage() {
+function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { signIn, user, loading } = useAuth()
@@ -109,5 +109,13 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-950"><p className="text-gray-400">Loading...</p></div>}>
+      <SignInContent />
+    </Suspense>
   )
 }

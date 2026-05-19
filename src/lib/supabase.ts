@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient, type SupabaseClient } from "@supabase/supabase-js"
+import type { Database } from "./database.types"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
@@ -6,25 +7,15 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
 
 export const isSupabaseConfigured = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
-let _supabaseClient: ReturnType<typeof createClient> | null = null
-let _supabaseServer: ReturnType<typeof createClient> | null = null
+function initClient(): SupabaseClient<Database> | null {
+  if (!isSupabaseConfigured) return null
+  return createClient<Database>(supabaseUrl, supabaseAnonKey)
+}
 
-// Client for browser (uses anon key) - singleton
-export const supabaseClient = isSupabaseConfigured
-  ? (() => {
-      if (!_supabaseClient) {
-        _supabaseClient = createClient(supabaseUrl, supabaseAnonKey)
-      }
-      return _supabaseClient
-    })()
-  : null
+function initServer(): SupabaseClient<Database> | null {
+  if (!isSupabaseConfigured) return null
+  return createClient<Database>(supabaseUrl, supabaseServiceKey || supabaseAnonKey)
+}
 
-// Server client (uses service role key for full access) - singleton
-export const supabaseServer = isSupabaseConfigured
-  ? (() => {
-      if (!_supabaseServer) {
-        _supabaseServer = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey)
-      }
-      return _supabaseServer
-    })()
-  : null
+export const supabaseClient = initClient()
+export const supabaseServer = initServer()
