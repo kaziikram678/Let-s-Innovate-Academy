@@ -260,7 +260,7 @@ export async function PATCH(request: NextRequest) {
 
     const { data, error } = await supabaseServer
       .from("enrollments")
-      .update({ status } as unknown as Partial<EnrollmentRow>)
+      .update({ status } as any)
       .eq("id", id)
       .select()
       .single()
