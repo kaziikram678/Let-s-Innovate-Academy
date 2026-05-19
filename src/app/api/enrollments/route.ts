@@ -70,9 +70,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: newEnrollment, error: insertError } = await supabaseServer
-      .from("enrollments")
-      .insert({
+    const enrollmentsTable = supabaseServer.from("enrollments") as any
+
+    const { data: newEnrollment, error: insertError } = await enrollmentsTable
+      .insert([{
         course_slug: courseSlug,
         course_title: courseTitle,
         full_name: fullName,
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
         message: message || null,
         status: "pending",
         user_id: userId || null,
-      } as unknown as EnrollmentRow)
+      }])
       .select()
       .single()
 
