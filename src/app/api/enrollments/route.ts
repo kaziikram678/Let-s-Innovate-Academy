@@ -258,9 +258,10 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const { data, error } = await supabaseServer
-      .from("enrollments")
-      .update({ status } as any)
+    const enrollmentsTable = supabaseServer.from("enrollments") as any
+
+    const { data, error } = await enrollmentsTable
+      .update({ status })
       .eq("id", id)
       .select()
       .single()
