@@ -18,7 +18,7 @@ export interface WorkItem {
   category: string
   description: string
   media: string
-  mediaType: "image" | "video"
+  mediaType: "image" | "video" | "youtube"
   aspectRatio?: "16:9" | "9:16"
   link?: string
   linkLabel?: string

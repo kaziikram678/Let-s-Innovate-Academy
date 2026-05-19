@@ -7,8 +7,8 @@ export const works: WorkItem[] = [
     category: "Product Demo",
     description:
       "Clean product demonstration video showcasing features and benefits.",
-    media: "/videos/work-5.mp4",
-    mediaType: "video",
+    media: "VIDEO_ID_HERE",
+    mediaType: "youtube",
   },
   {
     id: "compilation-error",
@@ -27,8 +27,8 @@ export const works: WorkItem[] = [
     category: "YouTube Content",
     description:
       "Clean talking-head edit with pacing, captions, b-roll, and visual polish.",
-    media: "/videos/work-1.mp4",
-    mediaType: "video",
+    media: "VIDEO_ID_HERE",
+    mediaType: "youtube",
   },
   {
     id: "shorts-reels",
@@ -36,8 +36,8 @@ export const works: WorkItem[] = [
     category: "Shorts/Reels",
     description:
       "Vertical short-form edit with hook, captions, zooms, and engaging pacing.",
-    media: "/videos/work-2.mp4",
-    mediaType: "video",
+    media: "VIDEO_ID_HERE",
+    mediaType: "youtube",
     aspectRatio: "9:16",
   },
   {
@@ -46,8 +46,8 @@ export const works: WorkItem[] = [
     category: "Ads",
     description:
       "Short promotional ad designed for social platforms.",
-    media: "/videos/work-3.mp4",
-    mediaType: "video",
+    media: "VIDEO_ID_HERE",
+    mediaType: "youtube",
   },
   {
     id: "thumbnail-graphics",
@@ -73,8 +73,8 @@ export const works: WorkItem[] = [
     category: "Ads",
     description:
       "Appetizing food advertisement edit designed for social media platforms.",
-    media: "/videos/work-4.mp4",
-    mediaType: "video",
+    media: "VIDEO_ID_HERE",
+    mediaType: "youtube",
   },
   {
     id: "story-telling",
@@ -82,8 +82,8 @@ export const works: WorkItem[] = [
     category: "YouTube Content",
     description:
       "Engaging narrative-driven video edit with emotional pacing and visuals.",
-    media: "/videos/work-6.mp4",
-    mediaType: "video",
+    media: "VIDEO_ID_HERE",
+    mediaType: "youtube",
   },
   {
     id: "educational-content",
@@ -91,8 +91,8 @@ export const works: WorkItem[] = [
     category: "YouTube Content",
     description:
       "Informative video edit with clear explanations, graphics, and captions.",
-    media: "/videos/work-7.mp4",
-    mediaType: "video",
+    media: "VIDEO_ID_HERE",
+    mediaType: "youtube",
   },
 ]
 

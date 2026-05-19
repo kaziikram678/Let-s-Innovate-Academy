@@ -9,7 +9,16 @@ export default function WorkCard({ work }: WorkCardProps) {
   return (
     <div className="group bg-[#111111] border border-white/10 hover:border-red-500/30 rounded-2xl overflow-hidden transition-all duration-300">
       <div className={`relative ${work.aspectRatio === "9:16" ? "aspect-[9/16]" : "aspect-video"} overflow-hidden`}>
-        {work.mediaType === "video" ? (
+        {work.mediaType === "youtube" ? (
+          <iframe
+            className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+            src={`https://www.youtube.com/embed/${work.media}?rel=0&modestbranding=1`}
+            title={work.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+          />
+        ) : work.mediaType === "video" ? (
           <video
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             src={work.media}
