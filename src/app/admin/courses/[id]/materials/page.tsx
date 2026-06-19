@@ -32,7 +32,7 @@ export default function CourseMaterialsPage() {
         router.push("/auth/signin?redirect=/admin/courses")
         return
       }
-      if (profile?.role !== "admin") {
+      if (profile && profile.role !== "admin") {
         router.push("/dashboard")
         return
       }
@@ -125,7 +125,7 @@ export default function CourseMaterialsPage() {
     }
   }
 
-  if (loading || profile?.role !== "admin") {
+  if (loading || !profile || profile.role !== "admin") {
     return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>
   }
 

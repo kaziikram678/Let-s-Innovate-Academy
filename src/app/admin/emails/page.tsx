@@ -36,7 +36,7 @@ export default function AdminEmails() {
         router.push("/auth/signin?redirect=/admin/emails")
         return
       }
-      if (profile?.role !== "admin") {
+      if (profile && profile.role !== "admin") {
         router.push("/dashboard")
         return
       }
@@ -164,7 +164,7 @@ export default function AdminEmails() {
     }
   }
 
-  if (loading || profile?.role !== "admin") {
+  if (loading || !profile || profile.role !== "admin") {
     return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>
   }
 

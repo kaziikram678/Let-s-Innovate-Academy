@@ -51,7 +51,7 @@ export default function CourseFormPage() {
         router.push("/auth/signin?redirect=/admin/courses/new")
         return
       }
-      if (profile?.role !== "admin") {
+      if (profile && profile.role !== "admin") {
         router.push("/dashboard")
         return
       }
@@ -222,7 +222,7 @@ export default function CourseFormPage() {
     setFaqs(faqs.filter((_, i) => i !== index))
   }
 
-  if (loading || loadingCourse || profile?.role !== "admin") {
+  if (loading || loadingCourse || !profile || profile.role !== "admin") {
     return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>
   }
 

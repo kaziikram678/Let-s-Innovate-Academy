@@ -21,7 +21,7 @@ export default function AdminCourses() {
         router.push("/auth/signin?redirect=/admin/courses")
         return
       }
-      if (profile?.role !== "admin") {
+      if (profile && profile.role !== "admin") {
         router.push("/dashboard")
         return
       }
@@ -70,7 +70,7 @@ export default function AdminCourses() {
     .filter(c => filter === "all" || c.status === filter)
     .filter(c => !search || c.title.toLowerCase().includes(search.toLowerCase()) || c.slug.toLowerCase().includes(search.toLowerCase()))
 
-  if (loading || profile?.role !== "admin") {
+  if (loading || !profile || profile.role !== "admin") {
     return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>
   }
 

@@ -22,7 +22,7 @@ export default function AdminDashboard() {
         router.push("/auth/signin?redirect=/admin")
         return
       }
-      if (profile?.role !== "admin") {
+      if (profile && profile.role !== "admin") {
         router.push("/dashboard")
         return
       }
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
     }
   }
 
-  if (loading || profile?.role !== "admin") {
+  if (loading || !profile || profile.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-white">Loading...</div>
