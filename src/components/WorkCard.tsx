@@ -12,7 +12,7 @@ export default function WorkCard({ work }: WorkCardProps) {
         {work.mediaType === "youtube" ? (
           <iframe
             className="w-full h-full group-hover:scale-105 transition-transform duration-500"
-            src={`https://www.youtube.com/embed/${work.media}?rel=0&modestbranding=1`}
+            src={`https://www.youtube.com/embed/${work.media}?autoplay=1&mute=1&rel=0&modestbranding=1`}
             title={work.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
