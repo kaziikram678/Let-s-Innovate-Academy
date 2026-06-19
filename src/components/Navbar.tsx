@@ -42,7 +42,7 @@ export default function Navbar() {
                 </Link>
                 {isAdmin && (
                   <Link
-                    href="/admin/enrollments"
+                    href="/admin"
                     className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium rounded-full transition-all"
                   >
                     Admin
@@ -120,7 +120,7 @@ export default function Navbar() {
                   </Link>
                   {isAdmin && (
                     <Link
-                      href="/admin/enrollments"
+                      href="/admin"
                       onClick={() => setOpen(false)}
                       className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium rounded-full transition-all text-center mx-2"
                     >
