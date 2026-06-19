@@ -11,7 +11,7 @@ export default function WorkCard({ work }: WorkCardProps) {
       <div className={`relative ${work.aspectRatio === "9:16" ? "aspect-[9/16]" : "aspect-video"} overflow-hidden`}>
         {work.mediaType === "youtube" ? (
           <iframe
-            className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full"
             src={`https://www.youtube.com/embed/${work.media}?autoplay=1&mute=1&rel=0&modestbranding=1`}
             title={work.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -38,7 +38,7 @@ export default function WorkCard({ work }: WorkCardProps) {
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         )}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
       </div>
       <div className="p-5">
         <span className="text-red-400 text-xs font-medium uppercase tracking-wider">
