@@ -278,6 +278,23 @@ export async function PATCH(request: NextRequest) {
 
     if (status === "verified" && resend) {
       try {
+        const { data: course } = await supabaseServer
+          .from("courses")
+          .select("start_date, meeting_link, class_format, title")
+          .eq("slug", enrollmentData.course_slug)
+          .single()
+
+        const startDate = course?.start_date
+          ? new Date(course.start_date).toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "To be announced"
+
         await resend.emails.send({
           from: fromEmail,
           to: enrollmentData.email,
@@ -287,7 +304,15 @@ export async function PATCH(request: NextRequest) {
               <h2 style="color: #10b981;">Payment Verified!</h2>
               <p>Hi ${enrollmentData.full_name},</p>
               <p>Your payment for <strong>${enrollmentData.course_title}</strong> has been verified successfully.</p>
-              <p>You will receive an email with the live class schedule, meeting links, and instructions before each session.</p>
+              
+              <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                <h3 style="color: #4f46e5; margin-top: 0;">Course Details</h3>
+                <p><strong>Start Date:</strong> ${startDate}</p>
+                <p><strong>Class Format:</strong> ${course?.class_format || "Live"}</p>
+                ${course?.meeting_link ? `<p><strong>Meeting Link:</strong> <a href="${course.meeting_link}">${course.meeting_link}</a></p>` : "<p><strong>Meeting Link:</strong> Will be shared before class</p>"}
+              </div>
+
+              <p>You will receive reminder emails before each class session.</p>
               <p>If you have any questions, contact us on WhatsApp: <a href="https://wa.me/${siteConfig.whatsapp.replace('+', '')}">${siteConfig.whatsapp}</a></p>
               <p>Best regards,<br/>${siteConfig.name} Team</p>
             </div>

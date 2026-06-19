@@ -7,43 +7,114 @@ import CourseCTA from "@/components/CourseCTA"
 import FAQAccordion from "@/components/FAQAccordion"
 import { getCourseBySlug } from "@/data/courses"
 import { getInstructorBySlug } from "@/data/instructors"
+import { supabaseServer, isSupabaseConfigured } from "@/lib/supabase"
 
 type Props = {
   params: Promise<{ slug: string }>
 }
 
+async function getCourse(slug: string) {
+  if (isSupabaseConfigured && supabaseServer) {
+    const { data } = await supabaseServer
+      .from("courses")
+      .select("*")
+      .eq("slug", slug)
+      .single()
+
+    if (data) {
+      return { source: "db" as const, data }
+    }
+  }
+
+  const staticCourse = getCourseBySlug(slug)
+  if (staticCourse) {
+    return { source: "static" as const, data: staticCourse }
+  }
+
+  return null
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const course = getCourseBySlug(slug)
+  const courseData = await getCourse(slug)
 
-  if (!course) {
+  if (!courseData) {
     return { title: "Course Not Found | Let's Innovate Academy" }
   }
 
+  const course = courseData.data
+  const title = "source" in courseData && courseData.source === "db"
+    ? (course as any).title
+    : (course as any).title
+
+  const subtitle = "source" in courseData && courseData.source === "db"
+    ? (course as any).subtitle
+    : (course as any).subtitle
+
   return {
-    title: `${course.title} | Let's Innovate Academy`,
-    description: course.subtitle,
+    title: `${title} | Let's Innovate Academy`,
+    description: subtitle || "",
   }
 }
 
 export default async function CoursePage({ params }: Props) {
   const { slug } = await params
-  const course = getCourseBySlug(slug)
+  const courseData = await getCourse(slug)
 
-  if (!course || course.status === "coming-soon") {
+  if (!courseData) {
     notFound()
   }
 
-  const instructor = getInstructorBySlug(course.instructorSlug)
+  const isDB = courseData.source === "db"
+  const course = courseData.data as any
+
+  const status = isDB ? course.status : course.status
+  if (status === "coming-soon" || status === "draft" || status === "archived") {
+    notFound()
+  }
+
+  const title = isDB ? course.title : course.title
+  const subtitle = isDB ? course.subtitle : course.subtitle
+  const duration = isDB ? course.duration : course.duration
+  const lectures = isDB ? course.lectures_count : course.lectures
+  const image = isDB ? course.image_url : course.image
+  const studentsCount = isDB ? course.students_count : course.studentsCount
+  const rating = isDB ? course.rating : course.rating
+  const language = isDB ? course.language : course.language
+  const support = isDB ? course.support : course.support
+  const price = isDB ? course.price : course.price
+  const oldPrice = isDB ? course.old_price : course.oldPrice
+  const classFormat = isDB ? course.class_format : course.classFormat
+  const emailNotifications = isDB ? course.email_notifications : course.emailNotifications
+  const classSchedule = isDB ? course.class_schedule : course.classSchedule
+  const learnings = isDB ? course.learnings : course.learnings
+  const features = isDB ? course.features : course.features
+  const whoFor = isDB ? course.who_for : course.whoFor
+  const curriculum = isDB ? course.curriculum : course.curriculum
+  const faqs = isDB ? course.faqs : course.faqs
+  const instructorSlug = isDB ? course.instructor_slug : course.instructorSlug
+  const startDate = isDB ? course.start_date : null
+  const meetingLink = isDB ? course.meeting_link : null
+
+  const instructor = getInstructorBySlug(instructorSlug || "md-ikram")
+
+  const formattedStartDate = startDate
+    ? new Date(startDate).toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null
 
   return (
     <div className="bg-slate-50 min-h-screen">
-      {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/20 via-transparent to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
           <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
-            {/* Left Content */}
             <div className="lg:col-span-2">
               <Link
                 href="/courses"
@@ -60,64 +131,73 @@ export default async function CoursePage({ params }: Props) {
               </span>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
-                {course.title}
+                {title}
               </h1>
 
               <p className="text-slate-300 text-lg mb-6 max-w-2xl">
-                {course.subtitle}
+                {subtitle}
               </p>
 
-              {/* Meta */}
+              {formattedStartDate && (
+                <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                  <p className="text-amber-300 flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="font-semibold">Course Starts:</span> {formattedStartDate}
+                  </p>
+                </div>
+              )}
+
               <div className="flex flex-wrap gap-4 sm:gap-6 text-sm text-slate-400 mb-8">
                 <span className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {course.duration}
+                  {duration}
                 </span>
                 <span className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
-                  {course.lectures} Lectures
+                  {lectures} Lectures
                 </span>
-                {course.studentsCount && (
+                {studentsCount && studentsCount > 0 && (
                   <span className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
-                    {course.studentsCount}+ Students
+                    {studentsCount}+ Students
                   </span>
                 )}
-                {course.rating && (
+                {rating && rating > 0 && (
                   <span className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                     </svg>
-                    {course.rating} Rating
+                    {rating} Rating
                   </span>
                 )}
                 <span className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                   </svg>
-                  {course.language}
+                  {language}
                 </span>
                 <span className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
-                  {course.support}
+                  {support}
                 </span>
               </div>
 
-              {/* Preview Thumbnail */}
               <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 mb-8">
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-indigo-900" />
-                {course.image && (
+                {image && (
                   <img
-                    src={course.image}
-                    alt={course.title}
+                    src={image}
+                    alt={title}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 )}
@@ -132,31 +212,35 @@ export default async function CoursePage({ params }: Props) {
               </div>
             </div>
 
-            {/* Right - CTA Card (Desktop) */}
             <div className="hidden lg:block">
               <CourseCTA
-                price={course.price}
-                oldPrice={course.oldPrice}
-                enrollHref={`/checkout/${course.slug}`}
-                classFormat={course.classFormat}
-                emailNotifications={course.emailNotifications}
+                price={typeof price === "number" ? `৳${price}` : price}
+                oldPrice={oldPrice ? (typeof oldPrice === "number" ? `৳${oldPrice}` : oldPrice) : undefined}
+                enrollHref={`/checkout/${slug}`}
+                classFormat={classFormat}
+                emailNotifications={emailNotifications}
+                startDate={formattedStartDate || undefined}
+                meetingLink={meetingLink || undefined}
               />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Mobile CTA */}
       <div className="lg:hidden sticky bottom-0 z-40 bg-white border-t border-slate-200 p-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <span className="text-2xl font-bold text-slate-900">{course.price}</span>
-            {course.oldPrice && (
-              <span className="text-sm text-slate-400 line-through ml-2">{course.oldPrice}</span>
+            <span className="text-2xl font-bold text-slate-900">
+              {typeof price === "number" ? `৳${price}` : price}
+            </span>
+            {oldPrice && (
+              <span className="text-sm text-slate-400 line-through ml-2">
+                {typeof oldPrice === "number" ? `৳${oldPrice}` : oldPrice}
+              </span>
             )}
           </div>
           <Link
-            href={`/checkout/${course.slug}`}
+            href={`/checkout/${slug}`}
             className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all"
           >
             Enroll Now
@@ -164,20 +248,17 @@ export default async function CoursePage({ params }: Props) {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
-          {/* Left - Content */}
           <div className="lg:col-span-2 space-y-12">
-            {/* What You Will Learn */}
             <section>
               <h2 className="text-2xl font-bold text-slate-900 mb-6">
                 What You Will Learn
               </h2>
               <div className="grid sm:grid-cols-2 gap-3">
-                {course.learnings.map((item) => (
+                {learnings.map((item: string, i: number) => (
                   <div
-                    key={item}
+                    key={i}
                     className="flex items-start gap-3 p-3 bg-white rounded-lg border border-slate-200"
                   >
                     <svg
@@ -199,15 +280,14 @@ export default async function CoursePage({ params }: Props) {
               </div>
             </section>
 
-            {/* Course Features */}
             <section>
               <h2 className="text-2xl font-bold text-slate-900 mb-6">
                 Course Features
               </h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                {course.features.map((feature) => (
+                {features.map((feature: any, i: number) => (
                   <CourseFeatureCard
-                    key={feature.title}
+                    key={i}
                     icon={feature.icon}
                     title={feature.title}
                     description={feature.description}
@@ -216,8 +296,7 @@ export default async function CoursePage({ params }: Props) {
               </div>
             </section>
 
-            {/* Live Class Info */}
-            {course.classFormat === "live" && (
+            {classFormat === "live" && (
               <section>
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">
                   Live Online Classes
@@ -264,10 +343,10 @@ export default async function CoursePage({ params }: Props) {
                       Practice assignments after each class to reinforce learning
                     </li>
                   </ul>
-                  {course.classSchedule && (
+                  {classSchedule && (
                     <div className="mt-6 p-4 bg-white rounded-xl border border-indigo-100">
                       <p className="text-sm text-slate-700">
-                        <span className="font-semibold text-indigo-600">Schedule:</span> {course.classSchedule}
+                        <span className="font-semibold text-indigo-600">Schedule:</span> {classSchedule}
                       </p>
                     </div>
                   )}
@@ -275,16 +354,15 @@ export default async function CoursePage({ params }: Props) {
               </section>
             )}
 
-            {/* Who This Course Is For */}
             <section>
               <h2 className="text-2xl font-bold text-slate-900 mb-6">
                 Who This Course Is For
               </h2>
               <div className="bg-white rounded-2xl border border-slate-200 p-6">
                 <ul className="space-y-3">
-                  {course.whoFor.map((item) => (
+                  {whoFor.map((item: string, i: number) => (
                     <li
-                      key={item}
+                      key={i}
                       className="flex items-start gap-3 text-slate-700"
                     >
                       <svg
@@ -307,12 +385,10 @@ export default async function CoursePage({ params }: Props) {
               </div>
             </section>
 
-            {/* Curriculum */}
             <section>
-              <CurriculumAccordion curriculum={course.curriculum} />
+              <CurriculumAccordion curriculum={curriculum} />
             </section>
 
-            {/* Instructor */}
             <section>
               <h2 className="text-2xl font-bold text-slate-900 mb-6">
                 Your Instructor
@@ -361,27 +437,26 @@ export default async function CoursePage({ params }: Props) {
               )}
             </section>
 
-            {/* FAQ */}
             <section>
               <h2 className="text-2xl font-bold text-slate-900 mb-6">
                 Frequently Asked Questions
               </h2>
-              <FAQAccordion faqs={course.faqs} />
+              <FAQAccordion faqs={faqs} />
             </section>
           </div>
 
-          {/* Right - Sidebar (Desktop) */}
           <div className="hidden lg:block">
             <div className="sticky top-24">
               <CourseCTA
-                price={course.price}
-                oldPrice={course.oldPrice}
-                enrollHref={`/checkout/${course.slug}`}
-                classFormat={course.classFormat}
-                emailNotifications={course.emailNotifications}
+                price={typeof price === "number" ? `৳${price}` : price}
+                oldPrice={oldPrice ? (typeof oldPrice === "number" ? `৳${oldPrice}` : oldPrice) : undefined}
+                enrollHref={`/checkout/${slug}`}
+                classFormat={classFormat}
+                emailNotifications={emailNotifications}
+                startDate={formattedStartDate || undefined}
+                meetingLink={meetingLink || undefined}
               />
 
-              {/* Payment Info */}
               <div className="mt-4 bg-white rounded-2xl border border-slate-200 p-5">
                 <h4 className="font-semibold text-slate-900 mb-3 text-sm">
                   Payment Method

@@ -1,14 +1,45 @@
 import Link from "next/link"
-import type { Course } from "@/types"
+import type { Course, DBCourse } from "@/types"
 import { getInstructorBySlug } from "@/data/instructors"
 
 interface CourseCardProps {
-  course: Course
+  course: Course | DBCourse
+}
+
+function isDBCourse(course: Course | DBCourse): course is DBCourse {
+  return "id" in course && "created_at" in course
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
-  const isEnrollOpen = course.status === "enroll-open"
-  const instructor = getInstructorBySlug(course.instructorSlug)
+  const isDB = isDBCourse(course)
+
+  const title = isDB ? course.title : course.title
+  const slug = isDB ? course.slug : course.slug
+  const status = isDB ? course.status : course.status
+  const price = isDB ? course.price : course.price
+  const oldPrice = isDB ? course.old_price : course.oldPrice
+  const duration = isDB ? course.duration : course.duration
+  const lectures = isDB ? course.lectures_count : course.lectures
+  const image = isDB ? course.image_url : course.image
+  const studentsCount = isDB ? course.students_count : course.studentsCount
+  const rating = isDB ? course.rating : course.rating
+  const classFormat = isDB ? course.class_format : course.classFormat
+  const instructorSlug = isDB ? course.instructor_slug : course.instructorSlug
+  const startDate = isDB ? course.start_date : null
+
+  const isEnrollOpen = status === "enroll-open"
+  const instructor = getInstructorBySlug(instructorSlug || "md-ikram")
+
+  const priceDisplay = isDB ? `৳${price}` : price
+  const oldPriceDisplay = isDB && oldPrice ? `৳${oldPrice}` : oldPrice
+
+  const formattedStartDate = startDate
+    ? new Date(startDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null
 
   return (
     <div
@@ -18,14 +49,13 @@ export default function CourseCard({ course }: CourseCardProps) {
           : "opacity-75"
       }`}
     >
-      {/* Image */}
       <div className="relative aspect-video overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-indigo-900" />
-        {course.image && (
+        {image && (
           <>
             <img
-              src={course.image}
-              alt={course.title}
+              src={image}
+              alt={title}
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -49,7 +79,6 @@ export default function CourseCard({ course }: CourseCardProps) {
           </div>
         </div>
 
-        {/* Status Badge */}
         <div className="absolute top-3 left-3">
           {isEnrollOpen ? (
             <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">
@@ -57,13 +86,12 @@ export default function CourseCard({ course }: CourseCardProps) {
             </span>
           ) : (
             <span className="px-3 py-1 bg-slate-500 text-white text-xs font-semibold rounded-full">
-              Coming Soon
+              {status === "coming-soon" ? "Coming Soon" : status}
             </span>
           )}
         </div>
 
-        {/* Live Class Badge */}
-        {course.classFormat === "live" && isEnrollOpen && (
+        {classFormat === "live" && isEnrollOpen && (
           <div className="absolute top-3 right-3">
             <span className="px-2.5 py-1 bg-indigo-500 text-white text-xs font-semibold rounded-full flex items-center gap-1">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
@@ -75,55 +103,61 @@ export default function CourseCard({ course }: CourseCardProps) {
         )}
       </div>
 
-      {/* Content */}
       <div className="p-5">
         <h3 className="text-slate-900 font-bold text-lg mb-2 line-clamp-2">
-          {course.title}
+          {title}
         </h3>
 
-        {/* Instructor */}
         {instructor && (
           <p className="text-slate-500 text-sm mb-3">by {instructor.name}</p>
         )}
 
-        {/* Meta */}
+        {formattedStartDate && isEnrollOpen && (
+          <div className="mb-3 p-2 bg-amber-50 rounded-lg border border-amber-200">
+            <p className="text-xs text-amber-700 flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Starts: {formattedStartDate}
+            </p>
+          </div>
+        )}
+
         <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
           <span className="flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {course.duration}
+            {duration}
           </span>
           <span className="flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
-            {course.lectures} Lectures
+            {lectures} Lectures
           </span>
         </div>
 
-        {/* Students & Rating */}
         <div className="flex items-center gap-4 text-sm mb-4">
-          {course.studentsCount && (
+          {studentsCount && studentsCount > 0 && (
             <span className="flex items-center gap-1 text-slate-500">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
-              {course.studentsCount}+
+              {studentsCount}+
             </span>
           )}
-          {course.rating && (
+          {rating && rating > 0 && (
             <span className="flex items-center gap-1">
               <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              <span className="text-slate-700 font-medium">{course.rating}</span>
+              <span className="text-slate-700 font-medium">{rating}</span>
             </span>
           )}
         </div>
 
-        {/* Live Class Info */}
-        {course.classFormat === "live" && isEnrollOpen && (
+        {classFormat === "live" && isEnrollOpen && (
           <div className="mb-4 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
             <p className="text-xs text-indigo-700 flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,22 +168,20 @@ export default function CourseCard({ course }: CourseCardProps) {
           </div>
         )}
 
-        {/* Price */}
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl font-bold text-slate-900">
-            {course.price}
+            {priceDisplay}
           </span>
-          {course.oldPrice && (
+          {oldPriceDisplay && (
             <span className="text-sm text-slate-400 line-through">
-              {course.oldPrice}
+              {oldPriceDisplay}
             </span>
           )}
         </div>
 
-        {/* CTA */}
         {isEnrollOpen ? (
           <Link
-            href={`/courses/${course.slug}`}
+            href={`/courses/${slug}`}
             className="block w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-center font-semibold rounded-xl transition-all duration-200"
           >
             Enroll Now

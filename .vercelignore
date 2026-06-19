@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+*.mp4
+*.sst
+.sst
+.vercel
+coverage
+.git
+.vscode

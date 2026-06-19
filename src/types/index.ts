@@ -150,3 +150,80 @@ export interface Enrollment {
   status: "pending" | "verified" | "rejected"
   createdAt: string
 }
+
+export interface DBCourse {
+  id: string
+  slug: string
+  title: string
+  subtitle?: string
+  description?: string
+  status: "draft" | "enroll-open" | "coming-soon" | "archived"
+  price: number
+  old_price?: number
+  duration?: string
+  lectures_count: number
+  image_url?: string
+  features: CourseFeature[]
+  learnings: string[]
+  who_for: string[]
+  curriculum: CurriculumDay[]
+  faqs: CourseFAQ[]
+  instructor_slug?: string
+  language: string
+  support?: string
+  payment_method?: string
+  class_format?: string
+  class_schedule?: string
+  email_notifications: boolean
+  students_count: number
+  rating: number
+  start_date?: string
+  end_date?: string
+  meeting_link?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CourseMaterial {
+  id: string
+  course_id: string
+  title: string
+  description?: string
+  material_type: "video" | "pdf"
+  file_url: string
+  file_size?: number
+  duration?: string
+  day_number?: number
+  lesson_order: number
+  is_preview: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface EmailTemplate {
+  id: string
+  name: string
+  subject: string
+  body: string
+  type: "verification" | "start_date" | "class_date" | "meeting_link" | "notice" | "custom"
+  variables: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SentEmail {
+  id: string
+  template_id?: string
+  recipient_email: string
+  recipient_name?: string
+  subject: string
+  body: string
+  type: string
+  course_id?: string
+  enrollment_id?: string
+  status: "pending" | "sent" | "failed"
+  sent_at?: string
+  error_message?: string
+  created_at: string
+}
