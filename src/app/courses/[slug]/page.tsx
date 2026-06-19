@@ -15,7 +15,7 @@ type Props = {
 
 async function getCourse(slug: string) {
   if (isSupabaseConfigured && supabaseServer) {
-    const { data } = await supabaseServer
+    const { data } = await (supabaseServer as any)
       .from("courses")
       .select("*")
       .eq("slug", slug)

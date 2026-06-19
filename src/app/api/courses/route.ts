@@ -11,14 +11,30 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status")
     const slug = searchParams.get("slug")
 
-    let query = supabaseServer
+    if (slug) {
+      const { data, error } = await (supabaseServer as any)
+        .from("courses")
+        .select("*")
+        .eq("slug", slug)
+        .single()
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          return NextResponse.json({ success: true, course: null })
+        }
+        console.error("Supabase query error:", error)
+        return NextResponse.json({ error: "Failed to fetch course" }, { status: 500 })
+      }
+
+      return NextResponse.json({ success: true, course: data })
+    }
+
+    let query = (supabaseServer as any)
       .from("courses")
       .select("*")
       .order("created_at", { ascending: false })
 
-    if (slug) {
-      query = query.eq("slug", slug).single()
-    } else if (status && status !== "all") {
+    if (status && status !== "all") {
       query = query.eq("status", status)
     }
 

@@ -13,7 +13,7 @@ async function getCourses() {
     return []
   }
 
-  const { data, error } = await supabaseServer
+  const { data, error } = await (supabaseServer as any)
     .from("courses")
     .select("*")
     .order("created_at", { ascending: false })
@@ -29,7 +29,7 @@ async function getCourses() {
 export default async function CoursesPage() {
   const dbCourses = await getCourses()
 
-  const totalLectures = dbCourses.reduce((sum, c) => sum + (c.lectures_count || 0), 0)
+  const totalLectures = dbCourses.reduce((sum: number, c: any) => sum + (c.lectures_count || 0), 0)
 
   return (
     <div className="bg-gradient-to-b from-slate-950 via-indigo-950/30 to-slate-950 min-h-screen">
@@ -76,7 +76,7 @@ export default async function CoursesPage() {
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {dbCourses.map((course) => (
+            {dbCourses.map((course: any) => (
               <CourseCard key={course.id} course={course} />
             ))}
           </div>

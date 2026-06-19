@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const result: any = { success: true }
 
     if (getTemplates) {
-      const { data: templates, error: templatesError } = await supabaseServer
+      const { data: templates, error: templatesError } = await (supabaseServer as any)
         .from("email_templates")
         .select("*")
         .order("created_at", { ascending: false })
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (getSentEmails) {
-      let query = supabaseServer
+      let query = (supabaseServer as any)
         .from("emails")
         .select("*, courses(title), email_templates(name)")
         .order("created_at", { ascending: false })
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Missing templateId or recipientEmail" }, { status: 400 })
       }
 
-      const { data: template, error: templateError } = await supabaseServer
+      const { data: template, error: templateError } = await (supabaseServer as any)
         .from("email_templates")
         .select("*")
         .eq("id", templateId)
@@ -94,8 +94,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Template not found" }, { status: 404 })
       }
 
-      let processedSubject = template.subject
-      let processedBody = template.body
+      let processedSubject = template.subject as string
+      let processedBody = template.body as string
 
       if (variables) {
         for (const [key, value] of Object.entries(variables)) {
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       processedBody = processedBody.replace(/\{\{[^}]+\}\}/g, "N/A")
 
       if (!resend) {
-        const { data: emailRecord, error: insertError } = await supabaseServer
+        const { data: emailRecord, error: insertError } = await (supabaseServer as any)
           .from("emails")
           .insert([{
             template_id: templateId,
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
       const emailStatus = sendError ? "failed" : "sent"
       const errorMessage = sendError ? sendError.message : null
 
-      const { data: emailRecord } = await supabaseServer
+      const { data: emailRecord } = await (supabaseServer as any)
         .from("emails")
         .insert([{
           template_id: templateId,
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
       const emailStatus = sendError ? "failed" : "sent"
       const errorMessage = sendError ? sendError.message : null
 
-      const { data: emailRecord } = await supabaseServer
+      const { data: emailRecord } = await (supabaseServer as any)
         .from("emails")
         .insert([{
           template_id: null,
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
       }
 
-      const { data: course } = await supabaseServer
+      const { data: course } = await (supabaseServer as any)
         .from("courses")
         .select("id, title")
         .eq("slug", courseSlug)
@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Course not found" }, { status: 404 })
       }
 
-      const { data: enrollments } = await supabaseServer
+      const { data: enrollments } = await (supabaseServer as any)
         .from("enrollments")
         .select("email, full_name, id")
         .eq("course_slug", courseSlug)
@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
 
         const emailStatus = sendError ? "failed" : "sent"
 
-        await supabaseServer
+        await (supabaseServer as any)
           .from("emails")
           .insert([{
             recipient_email: enrollment.email,
@@ -352,7 +352,7 @@ export async function PATCH(request: NextRequest) {
       updates.error_message = errorMessage
     }
 
-    const { data, error } = await supabaseServer
+    const { data, error } = await (supabaseServer as any)
       .from("emails")
       .update(updates)
       .eq("id", id)

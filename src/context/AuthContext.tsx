@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (phone) {
       const { data: { user: newUser } } = await supabaseClient.auth.getUser()
       if (newUser) {
-        await supabaseClient
+        await (supabaseClient as any)
           .from("profiles")
           .update({ phone })
           .eq("id", newUser.id)
@@ -134,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (updates: ProfileUpdate) => {
     if (!supabaseClient || !user) return { error: new Error("Not authenticated") }
 
-    const { error } = await supabaseClient
+    const { error } = await (supabaseClient as any)
       .from("profiles")
       .update(updates)
       .eq("id", user.id)

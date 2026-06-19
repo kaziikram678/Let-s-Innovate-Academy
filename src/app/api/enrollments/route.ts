@@ -278,7 +278,7 @@ export async function PATCH(request: NextRequest) {
 
     if (status === "verified" && resend) {
       try {
-        const { data: course } = await supabaseServer
+        const { data: course } = await (supabaseServer as any)
           .from("courses")
           .select("start_date, meeting_link, class_format, title")
           .eq("slug", enrollmentData.course_slug)
