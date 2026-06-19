@@ -13,6 +13,7 @@ export default function AdminCourses() {
   const [filter, setFilter] = useState("all")
   const [search, setSearch] = useState("")
   const [loadingData, setLoadingData] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!loading) {
@@ -37,9 +38,16 @@ export default function AdminCourses() {
     try {
       const res = await fetch("/api/courses")
       const data = await res.json()
-      setCourses(data.courses || [])
+      if (data.error) {
+        console.error("API error:", data.error)
+        setCourses([])
+        setError(data.error)
+      } else {
+        setCourses(data.courses || [])
+      }
     } catch (error) {
       console.error("Failed to fetch courses:", error)
+      setError("Failed to connect to database")
     } finally {
       setLoadingData(false)
     }
@@ -117,7 +125,26 @@ export default function AdminCourses() {
           </div>
         </div>
 
-        {loadingData ? (
+        {error && error.includes("table") ? (
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-8 text-center">
+            <h3 className="text-yellow-400 font-semibold text-lg mb-2">Database Tables Not Found</h3>
+            <p className="text-zinc-400 mb-4">You need to run the database migration first.</p>
+            <div className="bg-[#0a0a0a] rounded-lg p-4 text-left mb-4">
+              <p className="text-zinc-300 text-sm mb-2">1. Go to your <a href="https://lcmdeqdyoogxjdqymjna.supabase.co" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">Supabase Dashboard</a></p>
+              <p className="text-zinc-300 text-sm mb-2">2. Click <strong>SQL Editor</strong> in the left sidebar</p>
+              <p className="text-zinc-300 text-sm mb-2">3. Create a new query and paste the contents of:</p>
+              <code className="text-green-400 text-xs block bg-black/30 p-2 rounded mt-1">supabase/migrations/003_create_courses_materials_emails.sql</code>
+              <p className="text-zinc-300 text-sm mt-4">4. Click <strong>Run</strong></p>
+              <p className="text-zinc-300 text-sm mt-2">5. Refresh this page</p>
+            </div>
+            <button
+              onClick={() => { setError(null); fetchCourses() }}
+              className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-medium rounded-lg transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : loadingData ? (
           <div className="text-center py-12 text-zinc-400">Loading courses...</div>
         ) : filteredCourses.length === 0 ? (
           <div className="text-center py-12">
