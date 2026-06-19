@@ -10,6 +10,13 @@ interface ProtectedVideoPlayerProps {
   poster?: string
 }
 
+function getCloudinaryVideoUrl(src: string): string {
+  if (src.includes("res.cloudinary.com")) {
+    return src.replace("/upload/", "/upload/fl_attachment:no/")
+  }
+  return src
+}
+
 export default function ProtectedVideoPlayer({ src, title, userEmail, poster }: ProtectedVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -79,7 +86,7 @@ export default function ProtectedVideoPlayer({ src, title, userEmail, poster }: 
     >
       <video
         ref={videoRef}
-        src={src}
+        src={getCloudinaryVideoUrl(src)}
         poster={poster}
         className="w-full h-full"
         playsInline
