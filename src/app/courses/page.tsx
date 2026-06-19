@@ -2,6 +2,9 @@ import type { Metadata } from "next"
 import { supabaseServer, isSupabaseConfigured } from "@/lib/supabase"
 import CourseCard from "@/components/CourseCard"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 export const metadata: Metadata = {
   title: "Courses | Let's Innovate Academy",
   description:
